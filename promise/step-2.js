@@ -22,9 +22,9 @@ function BasePromise(fn) {
   }
   function reject (val) {
     if (self.status === PENDING) {
-      self.value = val
+      self.error = val
       self.status = REJECT
-      self.rejectQueen.forEach(i => i())
+      self.rejectQueen.forEach(i => i(error))
     }
   }
   fn(resolve, reject)
