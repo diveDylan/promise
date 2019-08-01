@@ -15,17 +15,17 @@ function BasePromise(fn) {
   const self = this
   function resolve (val) {
     if (self.status === PENDING) {
+      console.log('resovel inner', val)
       self.value = val
       self.status = RESOLVE
-      console.log('resolve', self.status)
-      setTimeout(() => self.resolveQueen.forEach(i => i()))
+      self.resolveQueen.forEach(i => i(val))
     }
   }
   function reject (val) {
     if (self.status === PENDING) {
       self.error = val
       self.status = REJECT
-      setTimeout(() => self.rejectQueen.forEach(i => i()))
+      setTimeout(() => self.rejectQueen.forEach(i => i(val)))
       
     }
   }
@@ -48,22 +48,22 @@ BasePromise.prototype.then = function(resolved, rejected) {
   // return promise here resolveNext => resolve, rejectNext => reject
   return new BasePromise((resolvedNext, rejectedNext) => {
     // 两件事 1、推入回掉队列 2、根据status执行不同队列
-    // not a function, return a value
     const resolveHandler = val => {
-      if (typeof resolveHandler !== 'function' ) {
-        console.log(1)
-        resolvedNext(val)
+      if (typeof resolved !== 'function' ) {    // not a function, return a value
+        resolvedNext(resolved)
         return
       }
       const res = resolved(val)
+     
       if (res instanceof BasePromise) {
         res.then(resolvedNext, rejectedNext)
       } else {
+        console.log(res, 'res')
         resolvedNext(res)
       }
     }
     const rejectHandler = err => {
-      if (typeof resolveHandler !== 'function' ) {
+      if (typeof rejected !== 'function' ) {
         resolvedNext(err)
         return
       }
@@ -77,20 +77,20 @@ BasePromise.prototype.then = function(resolved, rejected) {
 
     // 根据状态处理
     switch (status) {
-      case 'PENDING': {
-        console.log('peding')
+      case PENDING: {
+        // console.log('peding')
         // 这里this回掉当前promise的回掉
         this.resolveQueen.push(resolveHandler)
         this.rejectQueen.push(rejectHandler)
         break
       }
-      case 'RESOLVE': {
+      case RESOLVE: {
         
-        console.log('resove')
+        console.log('resove', value)
         resolveHandler(value)
         break
       }
-      case 'REJECT': {
+      case REJECT: {
         console.log('reject')
         rejectHandler(error)
         break
@@ -110,5 +110,15 @@ const a = new BasePromise((resolve, reject) => {
     resolve('success')
   }, 0);
 })
-a.then(() => 1).then((e) => console.log(e))
+
+const b = new BasePromise((resolve, reject) => {
+  setTimeout(() => {
+    resolve('success')
+  }, 0);
+})
+a.then((e) => {
+  console.log(e,1)
+  return 1
+}).then((e) => console.log(e,2))
+b.then(4).then((e) => console.log(e,2))
  

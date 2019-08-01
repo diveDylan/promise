@@ -1,2 +1,3 @@
 ✔ 1.new a promise can use then @started(19-07-29 23:49) @done(19-07-30 22:40) @lasted(22h51m58s)
-☐ 2、then always
+✔ 2、then always @done(19-08-01 11:08)
+✔ 3、return new Promise @done(19-08-01 11:31)
