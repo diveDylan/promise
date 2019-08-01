@@ -3,7 +3,7 @@ const PENDING = 'pending'
 const RESOLVE = 'resolve'
 const REJECT = 'reject'
 /**
- * 实现一个promise类可以使用一次then方法
+ * 实现一个promise类可以使用多次then方法
  * @param {*} resolve 
  * @param {*} reject 
  */
@@ -14,38 +14,48 @@ function BasePromise(fn) {
   this.rejectQueen = []
   const self = this
   function resolve (val) {
-    if (self.status === PENDING) {
-      self.value = val
-      self.status = RESOLVE
-      self.resolveQueen.forEach(i => i(self.value))
-    }
+    // 宏任务会在微任务执行完成后执行
+    // setTimeout(() => {
+      if (self.status === PENDING) {
+        self.value = val
+        self.status = RESOLVE
+        console.log(val, self.resolveQueen)
+        self.resolveQueen.forEach((a) => {
+          self.value = a(self.value)
+        }, self.value)
+      }
+    // }, 0)
+    
   }
   function reject (val) {
-    if (self.status === PENDING) {
-      self.error = val
-      self.status = REJECT
-      self.rejectQueen.forEach(i => i(error))
-    }
+    // 宏任务会在微任务执行完成后执行
+    setTimeout(() => {
+      if (self.status === PENDING) {
+        self.value = val
+        self.status = RESOLVE
+        self.resolveQueen.forEach(i => {
+          let a = i(self.value)
+           constole.log(a, 'a')
+        })
+      }
+    }, 0)
   }
   fn(resolve, reject)
   return this
 }
 
 
-BasePromise.prototype.then = function(res) {
-  const self = this
-  self.resolveQueen.push(res)
+BasePromise.prototype.then = function(resolveHandler) {
+    this.resolveQueen.push(resolveHandler)
+    return this
 }
 
-BasePromise.prototype.catch = function() {
-  console.error(this.error)
-}
-
-const a = new BasePromise((resolve, reject) => {
+let a = new BasePromise((resolve,reject) => {
   setTimeout(() => {
-    resolve('success')
-    console.log('111')
+    resolve(1)
   }, 0);
-  console.log(222)
 })
-a.then((e) => console.log(e))
+a.then((e) => {
+  console.log(e, 1)
+  return 2
+}).then((e) => console.log(e, 2))

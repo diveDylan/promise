@@ -17,15 +17,16 @@ function BasePromise(fn) {
     if (self.status === PENDING) {
       self.value = val
       self.status = RESOLVE
-      console.log('resolve', self.resolveQueen)
-      self.resolveQueen.forEach(i => i())
+      console.log('resolve', self.status)
+      setTimeout(() => self.resolveQueen.forEach(i => i()))
     }
   }
   function reject (val) {
     if (self.status === PENDING) {
       self.error = val
       self.status = REJECT
-      self.rejectQueen.forEach(i => i())
+      setTimeout(() => self.rejectQueen.forEach(i => i()))
+      
     }
   }
   try {
@@ -43,12 +44,14 @@ function BasePromise(fn) {
  */
 BasePromise.prototype.then = function(resolved, rejected) {
   const { status, value, error } = this
+  console.log( status, value, error )
   // return promise here resolveNext => resolve, rejectNext => reject
   return new BasePromise((resolvedNext, rejectedNext) => {
     // 两件事 1、推入回掉队列 2、根据status执行不同队列
     // not a function, return a value
     const resolveHandler = val => {
       if (typeof resolveHandler !== 'function' ) {
+        console.log(1)
         resolvedNext(val)
         return
       }
@@ -107,5 +110,5 @@ const a = new BasePromise((resolve, reject) => {
     resolve('success')
   }, 0);
 })
-a.then(1).then((e) => console.log(e))
+a.then(() => 1).then((e) => console.log(e))
  
